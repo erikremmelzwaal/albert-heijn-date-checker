@@ -27,11 +27,23 @@ params = (
 
 response = requests.get('https://www.ah.nl/service/rest/delegate', headers=headers, params=params)
 
+slotsfull = True
+
 for day in json.loads(response.text)['_embedded']['lanes'][3]['_embedded']['items'][0]['_embedded']['deliveryDates']:
   for slot in day['deliveryTimeSlots']:
     if slot['state'] != 'full':
+      slotsfull = False
       message = "AH delivery timeslot available on {}: from {} to {}".format(day['date'], slot['from'], slot['to'])
       url = "https://api.telegram.org/{}/sendMessage?text={}&chat_id={}"
       req = url.format(telegram_api_key, message, chat_id)
       print(req)
       requests.get(req)
+
+if slotsfull:
+  message = "AH delivery timeslots are all full!"
+  print(message)
+  #uncomment following lines to debug telegram notification
+  #url = "https://api.telegram.org/{}/sendMessage?text={}&chat_id={}"
+  #req = url.format(telegram_api_key, message, chat_id)
+  #print(req)
+  #requests.get(req)
